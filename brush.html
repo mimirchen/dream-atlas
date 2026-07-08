@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手绘馆 · 妈妈画的梦 — 觅梦 Dream Atlas</title>
+<meta name="description" content="把你的梦写给我们,画师何江亲笔画成一幅水墨,装裱寄到你手上。Dreams, hand-painted in ink by a mother's brush.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Long+Cang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/analytics.js"></script>
+<style>
+  .works{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
+  @media(max-width:820px){.works{grid-template-columns:1fr;max-width:460px;margin-left:auto;margin-right:auto}}
+  .work{background:var(--bg-deep);border:1px solid var(--hair);border-radius:3px;padding:14px}
+  .work .mat{border:1px solid var(--hair-soft);padding:10px;background:#ECEAE3}
+  .work img{width:100%;display:block}
+  .work .cap{display:flex;justify-content:space-between;margin-top:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:640px;margin:44px auto 0;border:1px solid var(--hair);border-radius:3px;overflow:hidden}
+  @media(max-width:640px){.duo{grid-template-columns:1fr}}
+  .duo>div{padding:26px 28px}
+  .duo>div:first-child{border-right:1px solid var(--hair-soft);background:var(--bg-deep)}
+  .duo .t{font-family:"Noto Serif SC",serif;font-size:17px;margin-bottom:6px}
+  .duo .d{font-size:13px;color:var(--muted)}
+  .duo .who{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--seal);margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
+    <div class="nav-right">
+      <a href="gallery.html" data-i18n="nav.gallery">今夜展厅</a>
+      <a href="app.html" data-i18n="nav.app">进入制版台</a>
+      <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
+    </div>
+  </nav>
+
+  <header class="hero" style="padding:72px 0 40px">
+    <div class="kicker">The Painted Wing · 手绘馆</div>
+    <h1 style="font-size:clamp(34px,5vw,56px)" data-i18n="b.title">妈妈画的梦</h1>
+    <p class="hero-tag">
+      <span data-i18n="b.sub1">觅梦馆长的母亲、画师<b>何江</b>,在湘水畔的画案前,把陌生人的梦一笔一笔画成水墨。</span><br>
+      <em data-i18n="b.sub2">Dreams, hand-painted by a mother's brush.</em>
+    </p>
+  </header>
+
+  <!-- ================= the two doubles ================= -->
+  <section style="padding-top:8px">
+    <div class="duo">
+      <div>
+        <div class="who">Machine · 机</div>
+        <div class="t" data-i18n="b.duo1t">AI 刻你的梦</div>
+        <div class="d" data-i18n="b.duo1d">铜版画,即刻而成,免费。每一个梦,当夜就有一块版。</div>
+      </div>
+      <div>
+        <div class="who">Hand · 手</div>
+        <div class="t" data-i18n="b.duo2t">妈妈画你的梦</div>
+        <div class="d" data-i18n="b.duo2d">水墨原作,亲笔慢工,一周只有几幅。挑一个值得的梦。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= works ================= -->
+  <section class="bordered">
+    <div class="sec-label">Selected Works · 近作</div>
+    <h2 class="sec-title" data-i18n="b.wt">画师何江 · 三幅</h2>
+    <div class="works">
+      <div class="work"><div class="mat"><img src="assets/art/hejiang-lake.jpg" alt="何江 · 湖山烟树 ink landscape"></div><div class="cap"><span data-i18n="b.w1">湖山烟树</span><span>何江</span></div></div>
+      <div class="work"><div class="mat"><img src="assets/art/hejiang-lotus.jpg" alt="何江 · 荷塘锦鲤 lotus and koi"></div><div class="cap"><span data-i18n="b.w2">荷塘锦鲤</span><span>何江</span></div></div>
+      <div class="work"><div class="mat"><img src="assets/art/hejiang-bird.jpg" alt="何江 · 蓝鹊花影 blue magpie"></div><div class="cap"><span data-i18n="b.w3">蓝鹊花影</span><span>何江</span></div></div>
+    </div>
+  </section>
+
+  <!-- ================= how ================= -->
+  <section class="bordered">
+    <div class="sec-label">The Ritual · 求画三步</div>
+    <h2 class="sec-title" data-i18n="b.ht">如何求一幅画</h2>
+    <div class="trio">
+      <div><div class="n">I.</div><div class="t" data-i18n="b.h1">写下那个梦</div><div class="d" data-i18n="b.h1d">值得挂在墙上的梦,往往是反复到访的那个。几句话即可,碎的也行。</div></div>
+      <div><div class="n">II.</div><div class="t" data-i18n="b.h2">画师亲笔</div><div class="d" data-i18n="b.h2d">何江以水墨小写意作画,落款钤印。一梦一稿,不复制,不批量。</div></div>
+      <div><div class="n">III.</div><div class="t" data-i18n="b.h3">原作寄达</div><div class="d" data-i18n="b.h3d">宣纸原作,装裱后从湘水之滨寄出。画师档期有限,每周仅数幅。</div></div>
+    </div>
+  </section>
+
+  <!-- ================= intent ================= -->
+  <section class="bordered" style="text-align:center">
+    <h2 class="sec-title" data-i18n="b.it">画师档期有限,先登记</h2>
+    <p class="sec-sub" style="margin:0 auto 8px" data-i18n="b.isub">留下邮箱:画师有档期时,我们按顺序联系你,把梦讲给她听。</p>
+    <p class="form-note" style="margin-bottom:26px" data-i18n="b.inote">登记只留邮箱,不涉及任何付款;成画与否、润格与档期,均由画师与你直接商定。</p>
+    <div style="display:flex;gap:10px;max-width:440px;margin:0 auto">
+      <input type="email" class="field" id="biEmail" data-i18n-ph="wl.ph" placeholder="你的邮箱" style="flex:1">
+      <button class="btn btn-seal" id="biBtn" data-i18n="b.ibtn">登记求画</button>
+    </div>
+    <p class="form-note" id="biNote" style="min-height:18px"></p>
+  </section>
+
+  <footer>
+    <span data-i18n="footer.rights">© 2026 觅梦 Dream Atlas · Beta</span>
+    <span><a href="index.html" data-i18n="footer.home">首页</a> · <a href="https://doublemi.ai">DoubleMi<span data-i18n="footer.studio"> 出品</span></a></span>
+  </footer>
+</div>
+
+<script>
+(async function () {
+  const S = window.AtlasStore, T = window.AtlasI18N;
+  T.apply();
+  await S.init();
+  async function join() {
+    const el = document.getElementById("biEmail"), note = document.getElementById("biNote");
+    const email = el.value.trim();
+    if (!email || !email.includes("@")) { el.focus(); return; }
+    document.getElementById("biBtn").disabled = true;
+    try {
+      const res = await S.joinWaitlist(email, "brush-intent");
+      note.textContent = T.t("b.iok") + (res.cloud ? "" : " " + T.t("wl.local"));
+      el.value = "";
+      Atlas.track("brush_intent", { cloud: res.cloud });
+    } catch (e) { note.textContent = T.t("wl.err"); }
+    document.getElementById("biBtn").disabled = false;
+  }
+  document.getElementById("biBtn").addEventListener("click", join);
+  document.getElementById("biEmail").addEventListener("keydown", e => { if (e.key === "Enter") join(); });
+})();
+</script>
+</body>
+</html>

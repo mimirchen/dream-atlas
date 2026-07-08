@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>觅梦 · Dream Atlas — 制版台 The Press</title>
+<meta name="description" content="说出昨夜的梦,收下为你镌刻的铜版画。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Long+Cang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/engraver.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/entitlements.js"></script>
+<script src="assets/js/analytics.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
+    <div class="nav-right">
+      <span class="badge" id="usageBadge" style="display:none"></span>
+      <a href="gallery.html" data-i18n="nav.gallery">今夜展厅</a>
+      <a href="#" id="authBtn" data-i18n="app.signin">登录 / 注册</a>
+      <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
+    </div>
+  </nav>
+
+  <div class="banner" id="localBanner" style="display:none">
+    <span data-i18n="auth.local">云端尚未连接:当前为本地模式,梦保存在此浏览器。</span>
+  </div>
+
+  <!-- ================= press ================= -->
+  <section id="press">
+    <div class="maker">
+      <div>
+        <div class="sec-label" data-i18n="maker.label">Plate Press · 制版台</div>
+        <h2 class="sec-title" data-i18n="maker.title">昨夜,你梦见了什么?</h2>
+        <p class="sec-sub" style="margin-bottom:26px" data-i18n="maker.sub">写下来,或按住说 30 秒。梦不必完整——碎片正是版画最好的原料。</p>
+        <textarea id="dreamText" class="field" data-i18n-ph="maker.ph" placeholder="例如:我梦见回到老家,门开着,屋里涨满了水,水面上浮着一颗牙齿…"></textarea>
+        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;align-items:center">
+          <button class="btn" id="engraveBtn" data-i18n="maker.engrave">镌刻此梦</button>
+          <button class="btn btn-ghost" id="voiceBtn" data-i18n="maker.voice">◉ 语音说梦</button>
+        </div>
+        <p class="form-note" id="voiceHint" data-i18n="maker.voice.hint">语音识别需要 Chrome / Safari 授权麦克风。</p>
+        <div class="banner" id="limitBanner" style="display:none"><span data-i18n="limit.reached"></span></div>
+        <div style="margin-top:26px;padding-top:22px;border-top:1px solid var(--hair-soft)">
+          <span class="form-note" data-i18n="maker.try">没想起梦?试试这些 —</span><br>
+          <button class="chip" data-chip="1" data-i18n="chip.1">无限的楼梯</button>
+          <button class="chip" data-chip="2" data-i18n="chip.2">海上飞行</button>
+          <button class="chip" data-chip="3" data-i18n="chip.3">迟到与蛇</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card-stage">
+          <div class="card-empty" id="cardEmpty" style="white-space:pre-line" data-i18n="card.empty">此处将浮现
+你的第一块梦境铜版</div>
+          <div class="card" id="card" style="display:none">
+            <div class="card-inner">
+              <div class="card-head">
+                <span id="plateNo">Plate No. 001</span>
+                <span id="plateDate"></span>
+              </div>
+              <svg id="cardArt" class="card-art" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg"></svg>
+              <div class="card-motifs" id="cardMotifs"></div>
+              <p class="card-excerpt" id="cardExcerpt"></p>
+              <p class="card-reading" id="cardReading"></p>
+              <div class="card-foot"><span>Dream Atlas · 觅梦</span><span id="plateNight"></span></div>
+              <div class="card-seal hand">觅</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-actions" id="cardActions" style="display:none">
+          <button class="btn btn-ghost" id="saveBtn" data-i18n="card.save">保存卡片</button>
+          <button class="btn" id="shareBtn" data-i18n="card.share">分享</button>
+          <button class="btn btn-ghost" id="donateBtn" data-i18n="donate.btn">捐入展厅</button>
+        </div>
+        <div id="shareMenu" style="display:none;text-align:center;margin-top:14px">
+          <button class="chip" id="shareX" data-i18n="share.x">分享到 X</button>
+          <button class="chip" id="shareCopy" data-i18n="share.copy">复制文案+链接</button>
+          <button class="chip" id="shareApps" data-i18n="share.apps">小红书 / Instagram</button>
+          <p class="form-note" id="shareNote" style="min-height:16px"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= archive ================= -->
+  <section class="bordered">
+    <div class="sec-label" data-i18n="archive.label">Archive · 我的档案</div>
+    <h2 class="sec-title" data-i18n="archive.title">你的博物馆,正在成形</h2>
+    <div class="archive-grid" id="archiveGrid"></div>
+    <p class="empty-note" id="archiveEmpty" data-i18n="archive.empty">档案尚是空白。刻下第一个梦,它便开始收藏。</p>
+  </section>
+
+  <!-- ================= ledger ================= -->
+  <section class="bordered">
+    <div class="sec-label" data-i18n="ledger.label">Motif Ledger · 图案志</div>
+    <h2 class="sec-title" data-i18n="ledger.title">你反复梦见的,正在成形</h2>
+    <p class="sec-sub" data-i18n="ledger.sub">每刻一块版,图案志便记下它的母题。日子久了,你会看见自己夜晚的地形图。</p>
+    <div class="ledger-grid" id="ledgerGrid"></div>
+    <p class="empty-note" id="ledgerEmpty" data-i18n="ledger.empty">图案志尚是空白。</p>
+  </section>
+
+  <footer>
+    <span data-i18n="footer.rights">© 2026 觅梦 Dream Atlas · Beta</span>
+    <span><a href="index.html" data-i18n="footer.home">首页</a> · <a href="https://doublemi.ai">DoubleMi<span data-i18n="footer.studio"> 出品</span></a></span>
+  </footer>
+</div>
+
+<!-- ================= auth modal ================= -->
+<div class="modal-back" id="authModal">
+  <div class="modal">
+    <h3 data-i18n="auth.title">领一把馆钥</h3>
+    <p data-i18n="auth.p">输入邮箱,寄给你一条魔法链接——点开即登录,梦境档案从此云端保存、跨设备同步。</p>
+    <div class="row">
+      <input type="email" class="field" id="authEmail" data-i18n-ph="wl.ph" placeholder="你的邮箱">
+      <button class="btn" id="authSend" data-i18n="auth.send">寄链接</button>
+    </div>
+    <p class="form-note" id="authNote"></p>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

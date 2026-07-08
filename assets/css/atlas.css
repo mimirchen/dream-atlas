@@ -1,0 +1,142 @@
+/* 觅梦 Dream Atlas — design system
+   Tokens shared with 觅 Atelier: ink black, cream etch lines, seal red. */
+:root{
+  --bg:#1A1B1E;
+  --bg-deep:#141518;
+  --cream:#ECEAE3;
+  --muted:#9C9C93;
+  --faint:#6E6E67;
+  --seal:#CE4A33;
+  --seal-deep:#A8362B;
+  --hair:rgba(236,234,227,0.16);
+  --hair-soft:rgba(236,234,227,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--cream);
+  font-family:"Instrument Sans","Noto Sans SC",-apple-system,"PingFang SC",sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.7;overflow-x:hidden;
+}
+::selection{background:var(--seal);color:var(--cream)}
+.serif{font-family:"Cormorant Garamond",Georgia,serif}
+.hand{font-family:"Long Cang","Noto Serif SC",serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+
+/* ---------- nav ---------- */
+nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0;border-bottom:1px solid var(--hair-soft)}
+nav .nav-mark{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:18px;color:var(--cream);text-decoration:none;letter-spacing:.04em}
+nav .nav-mark .cn{font-family:"Noto Serif SC",serif;font-style:normal;font-size:15px;color:var(--muted);margin-left:8px}
+nav .nav-right{display:flex;gap:20px;align-items:center}
+nav a{color:var(--muted);text-decoration:none;font-size:13px;letter-spacing:.1em;transition:color .3s}
+nav a:hover{color:var(--cream)}
+.lang-toggle{background:none;border:1px solid var(--hair);border-radius:999px;color:var(--muted);font-family:inherit;font-size:11.5px;letter-spacing:.08em;padding:5px 12px;cursor:pointer;transition:all .25s}
+.lang-toggle:hover{color:var(--cream);border-color:var(--cream)}
+
+/* ---------- type ---------- */
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:clamp(42px,6.5vw,78px);line-height:1.06}
+h1 .cn{font-family:"Noto Serif SC",serif;font-style:normal;font-weight:400;font-size:.6em;display:block;margin-top:16px;letter-spacing:.26em;color:var(--muted)}
+.sec-label{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+.sec-title{font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:500;font-size:clamp(25px,3.2vw,36px);margin-bottom:14px}
+.sec-sub{color:var(--muted);max-width:580px;font-size:15px}
+.kicker{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--seal);margin-bottom:26px}
+.hair-rule{width:64px;height:1px;background:var(--hair);margin:42px auto 0}
+
+/* ---------- layout ---------- */
+header.hero{padding:88px 0 68px;text-align:center}
+.hero-tag{margin:32px auto 0;max-width:540px;color:var(--muted);font-size:16px}
+.hero-tag em{font-family:"Cormorant Garamond",serif;color:var(--cream);font-size:1.08em}
+section{padding:68px 0}
+.bordered{border-top:1px solid var(--hair-soft)}
+
+/* ---------- buttons & inputs ---------- */
+.btn{appearance:none;border:1px solid var(--cream);background:var(--cream);color:var(--bg);font-family:inherit;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:13px 26px;cursor:pointer;border-radius:2px;transition:opacity .25s;text-decoration:none;display:inline-block}
+.btn:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--cream);border-color:var(--hair)}
+.btn-ghost:hover{border-color:var(--cream);opacity:1}
+.btn-ghost.listening{border-color:var(--seal);color:var(--seal)}
+.btn-seal{background:var(--seal);border-color:var(--seal);color:#F5EFE4}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.field{width:100%;background:transparent;border:1px solid var(--hair);border-radius:2px;color:var(--cream);font-family:"Noto Serif SC",serif;font-size:15.5px;padding:14px 18px;outline:none;transition:border-color .3s}
+.field:focus{border-color:rgba(236,234,227,.38)}
+.field::placeholder{color:var(--faint)}
+textarea.field{min-height:130px;resize:vertical;line-height:1.9}
+.form-note{font-size:12px;color:var(--faint);margin-top:12px}
+.form-note b{color:var(--muted);font-weight:500}
+.chip{display:inline-block;margin:4px 6px 0 0;padding:6px 13px;border:1px solid var(--hair);border-radius:999px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all .25s;background:transparent;font-family:inherit}
+.chip:hover{color:var(--cream);border-color:var(--cream)}
+
+/* ---------- banners & badges ---------- */
+.banner{border:1px solid var(--hair);border-left:2px solid var(--seal);border-radius:2px;padding:12px 18px;font-size:13px;color:var(--muted);margin:20px 0}
+.badge{display:inline-block;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;border:1px solid var(--hair);border-radius:999px;padding:4px 12px;color:var(--muted)}
+.badge.seal{color:var(--seal);border-color:rgba(206,74,51,.5)}
+
+/* ---------- the plate card ---------- */
+.card-stage{display:flex;justify-content:center}
+.card{width:100%;max-width:400px;background:var(--bg-deep);border:1px solid var(--hair);border-radius:3px;padding:14px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.5);opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s ease}
+.card.shown{opacity:1;transform:none}
+.card-inner{border:1px solid var(--hair-soft);padding:22px 22px 26px;position:relative}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+.card-art{width:100%;height:auto;display:block}
+.card-motifs{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.motif-tag{font-size:11px;letter-spacing:.14em;color:var(--muted);border:1px solid var(--hair-soft);border-radius:999px;padding:4px 12px}
+.card-excerpt{margin-top:20px;font-family:"Noto Serif SC",serif;font-size:15px;line-height:2;color:var(--cream);text-align:center}
+.card-excerpt::before{content:"「";color:var(--faint)}
+.card-excerpt::after{content:"」";color:var(--faint)}
+.card-reading{margin-top:14px;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:14px;color:var(--muted);text-align:center;line-height:1.8}
+.card-reading .cn{font-family:"Noto Serif SC",serif;font-style:normal;font-size:13px;display:block;margin-top:4px}
+.card-seal{position:absolute;right:18px;bottom:16px;width:34px;height:34px;background:var(--seal);color:#F5EFE4;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:"Noto Serif SC",serif;font-size:19px;transform:rotate(-4deg);box-shadow:0 2px 10px rgba(206,74,51,.3)}
+.card-foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--hair-soft);display:flex;justify-content:space-between;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.card-empty{border:1px dashed var(--hair);border-radius:3px;padding:80px 32px;text-align:center;color:var(--faint);font-size:14px;max-width:400px;width:100%;font-family:"Noto Serif SC",serif;line-height:2.2}
+.card-actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
+
+/* ---------- grids ---------- */
+.maker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:56px;align-items:start}
+@media(max-width:820px){.maker{grid-template-columns:1fr}}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:42px}
+@media(max-width:760px){.trio{grid-template-columns:1fr}}
+.trio .n{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:32px;color:var(--seal)}
+.trio .t{font-family:"Noto Serif SC",serif;font-size:17px;margin:10px 0 8px}
+.trio .d{font-size:14px;color:var(--muted)}
+.samples{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:44px}
+@media(max-width:820px){.samples{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}}
+.samples .card{opacity:1;transform:none;max-width:none}
+
+/* ---------- pricing ---------- */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
+@media(max-width:820px){.pricing{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}}
+.price-card{border:1px solid var(--hair);border-radius:3px;padding:30px 26px;display:flex;flex-direction:column;gap:6px}
+.price-card.hi{border-color:rgba(206,74,51,.55)}
+.price-card .tier{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+.price-card.hi .tier{color:var(--seal)}
+.price-card .amount{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:38px;margin:6px 0 2px}
+.price-card .amount small{font-size:15px;color:var(--muted)}
+.price-card ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.price-card li{font-size:13.5px;color:var(--muted);padding-left:16px;position:relative}
+.price-card li::before{content:"·";position:absolute;left:2px;color:var(--seal)}
+
+/* ---------- archive & ledger ---------- */
+.archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;margin-top:32px}
+.archive-item{border:1px solid var(--hair-soft);border-radius:3px;background:var(--bg-deep);padding:10px;cursor:pointer;transition:border-color .25s}
+.archive-item:hover{border-color:var(--hair)}
+.archive-item svg{width:100%;height:auto;display:block}
+.archive-item .m{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:8px;display:flex;justify-content:space-between}
+.ledger-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.ledger-item{border:1px solid var(--hair-soft);border-radius:2px;padding:10px 16px;font-size:13px;color:var(--muted)}
+.ledger-item b{color:var(--cream);font-weight:500;font-family:"Noto Serif SC",serif}
+.ledger-item .n{color:var(--seal);font-family:"Cormorant Garamond",serif;font-style:italic;margin-left:8px}
+.empty-note{color:var(--faint);font-size:14px;margin-top:22px;font-family:"Noto Serif SC",serif}
+
+/* ---------- auth modal ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(10,10,12,.72);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
+.modal-back.open{display:flex}
+.modal{background:var(--bg);border:1px solid var(--hair);border-radius:3px;max-width:420px;width:100%;padding:36px 32px}
+.modal h3{font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:500;font-size:26px;margin-bottom:8px}
+.modal p{font-size:13.5px;color:var(--muted);margin-bottom:20px}
+.modal .row{display:flex;gap:10px;margin-top:14px}
+.modal .row .field{flex:1}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--hair-soft);padding:42px 0 60px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--faint);letter-spacing:.06em}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--cream)}

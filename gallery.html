@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今夜展厅 · The Night Gallery — 觅梦 Dream Atlas</title>
+<meta name="description" content="陌生人捐赠的梦境铜版画,每一块都独一无二。The Night Gallery of donated dream plates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Long+Cang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/engraver.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/analytics.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
+    <div class="nav-right">
+      <a href="app.html" data-i18n="nav.app">进入制版台</a>
+      <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
+    </div>
+  </nav>
+
+  <header class="hero" style="padding:72px 0 48px">
+    <div class="kicker">The Night Gallery · 今夜展厅</div>
+    <h1 style="font-size:clamp(34px,5vw,56px)" data-i18n="g.title">陌生人的昨夜</h1>
+    <p class="hero-tag" data-i18n="g.sub">这里的每一块版,都是有人愿意分给世界的一个梦。看完,去刻下你自己的。</p>
+    <div style="margin-top:32px">
+      <a class="btn" href="app.html" data-i18n="g.cta">去刻我的梦</a>
+    </div>
+  </header>
+
+  <section style="padding-top:24px">
+    <div class="samples" id="galleryGrid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))"></div>
+    <p class="empty-note" id="galleryEmpty" style="text-align:center;display:none" data-i18n="g.empty">展厅正在布展。刻下你的梦并「捐入展厅」,馆长审定后便会挂在这里。</p>
+  </section>
+
+  <footer>
+    <span data-i18n="footer.rights">© 2026 觅梦 Dream Atlas · Beta</span>
+    <span><a href="index.html" data-i18n="footer.home">首页</a> · <a href="https://doublemi.ai">DoubleMi<span data-i18n="footer.studio"> 出品</span></a></span>
+  </footer>
+</div>
+
+<script>
+(async function () {
+  const E = window.AtlasEngraver, S = window.AtlasStore, T = window.AtlasI18N;
+  T.apply();
+  await S.init();
+
+  function plateCard(row) {
+    const m = (row.motifs || []).map(k => E.byKey(k));
+    const card = document.createElement("div");
+    card.className = "card";
+    const excerpt = row.text.length > 42 ? row.text.slice(0, 42) + "…" : row.text;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-head"><span>Donated</span><span>${m.map(x => x.en).join(" · ")}</span></div>
+        <svg class="card-art" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg"></svg>
+        <p class="card-excerpt" style="font-size:13.5px">${excerpt.replace(/</g, "&lt;")}</p>
+        <p class="card-reading">${m[0] ? (T.locale === "zh" ? m[0].line : m[0].lineEn) : ""}</p>
+      </div>`;
+    E.renderArt(card.querySelector("svg"), row.art_params);
+    return card;
+  }
+
+  async function render() {
+    const grid = document.getElementById("galleryGrid");
+    grid.innerHTML = "";
+    let rows = [];
+    try { rows = await S.fetchGallery(60); } catch (e) {}
+    if (!rows.length) {
+      // museum is never empty: show the three specimen plates
+      rows = [1, 2, 3].map(i => {
+        const text = T.t("chip." + i + ".text");
+        return { text, ...{ art_params: E.artParams(text) }, motifs: E.artParams(text).motifs };
+      });
+      document.getElementById("galleryEmpty").style.display = "block";
+    }
+    rows.forEach(r => grid.appendChild(plateCard(r)));
+  }
+  await render();
+  document.addEventListener("atlas:locale", render);
+})();
+</script>
+</body>
+</html>

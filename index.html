@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>觅梦 · Dream Atlas — 梦境博物馆 The Museum of Dreams</title>
+<meta name="description" content="每一个梦,都值得一幅铜版画。说出昨夜的梦,收下今晨为你镌刻的一页。Every dream deserves an engraving.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Long+Cang&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/atlas.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/engraver.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/analytics.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
+    <div class="nav-right">
+      <a href="gallery.html" data-i18n="nav.gallery">今夜展厅</a>
+      <a href="brush.html" data-i18n="nav.brush">手绘馆</a>
+      <a href="app.html" data-i18n="nav.app">进入制版台</a>
+      <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="kicker">The Museum of Dreams · 梦境博物馆</div>
+    <h1>Dream Atlas<span class="cn">觅 · 梦</span></h1>
+    <p class="hero-tag">
+      <span data-i18n="hero.tag1">每一个梦,都值得一幅铜版画。</span><br>
+      <em>Every dream deserves an engraving.</em><br>
+      <span data-i18n="hero.tag2">说出昨夜的梦,收下今晨为你镌刻的一页。</span>
+    </p>
+    <div style="margin-top:40px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a class="btn" href="app.html" data-i18n="hero.cta">免费开始镌刻</a>
+      <a class="btn btn-ghost" href="#waitlist" data-i18n="hero.cta2">加入等待名单</a>
+    </div>
+    <div class="hair-rule"></div>
+  </header>
+
+  <!-- ================= specimens ================= -->
+  <section>
+    <div class="sec-label" data-i18n="samples.label">Specimens · 藏品一瞥</div>
+    <h2 class="sec-title" data-i18n="samples.title">三个陌生人的昨夜</h2>
+    <p class="sec-sub" data-i18n="samples.sub">每一块版都由梦的文字本身生成:同一个梦,永远刻出同一块版;两个梦,永远不会相同。</p>
+    <div class="samples" id="samples"></div>
+  </section>
+
+  <!-- ================= ritual ================= -->
+  <section class="bordered">
+    <div class="sec-label" data-i18n="ritual.label">The Ritual · 三步</div>
+    <h2 class="sec-title" data-i18n="ritual.title">一个清晨的仪式</h2>
+    <div class="trio">
+      <div><div class="n">I.</div><div class="t" data-i18n="ritual.t1">醒来,说 30 秒</div><div class="d" data-i18n="ritual.d1">趁梦还没散,对着手机说出来。语言碎一点没关系,梦本来就是碎的。</div></div>
+      <div><div class="n">II.</div><div class="t" data-i18n="ritual.t2">收到一幅版画</div><div class="d" data-i18n="ritual.d2">AI 为你的梦镌刻独一无二的铜版画,配一句注解——不重复,不套模板。</div></div>
+      <div><div class="n">III.</div><div class="t" data-i18n="ritual.t3">月末,看见主题</div><div class="d" data-i18n="ritual.d3">反复出现的水、门、飞行……按月装订成你的梦境图册,一座可翻阅的私人博物馆。</div></div>
+    </div>
+  </section>
+
+  <!-- ================= the book ================= -->
+  <section class="bordered" style="text-align:center">
+    <div class="sec-label" data-i18n="book.label">The Book · 图册</div>
+    <h2 class="sec-title" data-i18n="book.title">订阅不是买功能,是在攒一本书</h2>
+    <p class="sec-sub" style="margin:0 auto" data-i18n="book.sub">每夜一版,按月成册。年末,可将一整年的梦加印为一本布面精装《梦境图册》——你的博物馆,放得进书架。</p>
+  </section>
+
+  <!-- ================= admission ================= -->
+  <section class="bordered">
+    <div class="sec-label" data-i18n="price.label">Admission · 门票(预告)</div>
+    <h2 class="sec-title" data-i18n="price.title">开馆定价预告</h2>
+    <div class="pricing">
+      <div class="price-card">
+        <div class="tier" data-i18n="price.free.tier">免费</div>
+        <div class="amount">0</div>
+        <ul>
+          <li data-i18n="price.free.f1">每月 3 块版</li>
+          <li data-i18n="price.free.f2">图案志基础版</li>
+          <li data-i18n="price.free.f3">带印记分享</li>
+        </ul>
+      </div>
+      <div class="price-card hi">
+        <div class="tier" data-i18n="price.plus.tier">订阅 · 主推年付</div>
+        <div class="amount">CHF 59 <small>/ 年 · yr</small></div>
+        <ul>
+          <li data-i18n="price.plus.f1">无限镌刻</li>
+          <li data-i18n="price.plus.f2">每月图册 PDF</li>
+          <li data-i18n="price.plus.f3">无印记分享 · 实体书 8 折</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="tier" data-i18n="price.founder.tier">创始馆员 · 限 200 席</div>
+        <div class="amount">CHF 149 <small>once</small></div>
+        <ul>
+          <li data-i18n="price.founder.f1">终身订阅,一次买断</li>
+          <li data-i18n="price.founder.f2">名字蚀刻在馆员墙</li>
+          <li data-i18n="price.founder.f3">首年实体图册 5 折</li>
+        </ul>
+      </div>
+    </div>
+    <p class="form-note" style="margin-top:22px" data-i18n="price.note">以上为开馆预告——当前 beta 完全免费,没有任何付费入口。开馆时,等待名单第一个收到消息。</p>
+  </section>
+
+  <!-- ================= founding curator intent ================= -->
+  <section class="bordered" id="founder" style="text-align:center">
+    <div class="sec-label" data-i18n="fi.label">Founding Curators · 创始馆员</div>
+    <h2 class="sec-title" data-i18n="fi.title">200 席,现在可以预留</h2>
+    <p class="sec-sub" style="margin:0 auto 8px" data-i18n="fi.sub">创始馆员是这座博物馆的第一批名字:终身席位、名字蚀刻在馆员墙。开馆时按预留顺序邀请。</p>
+    <p class="form-note" style="margin-bottom:26px" data-i18n="fi.note0">预留只登记邮箱,不涉及任何付款或承诺;席位售罄即永久关闭。</p>
+    <div style="display:flex;gap:10px;max-width:440px;margin:0 auto">
+      <input type="email" class="field" id="fiEmail" data-i18n-ph="wl.ph" placeholder="你的邮箱" style="flex:1">
+      <button class="btn btn-seal" id="fiBtn" data-i18n="fi.btn">预留席位</button>
+    </div>
+    <p class="form-note" id="fiNote" style="min-height:18px"></p>
+  </section>
+
+  <!-- ================= waitlist ================= -->
+  <section class="bordered" id="waitlist" style="text-align:center">
+    <h2 class="sec-title" data-i18n="wl.title">第一批馆员,从这份名单里来</h2>
+    <p class="sec-sub" style="margin:0 auto 30px" data-i18n="wl.sub">留下邮箱:开馆时你第一个知道;创始馆员 200 席,也按这份名单顺位邀请。</p>
+    <div style="display:flex;gap:10px;max-width:440px;margin:0 auto">
+      <input type="email" class="field" id="wlEmail" data-i18n-ph="wl.ph" placeholder="你的邮箱" style="flex:1">
+      <button class="btn btn-seal" id="wlBtn" data-i18n="wl.btn">加入等待名单</button>
+    </div>
+    <p class="form-note" id="wlNote" style="min-height:18px"></p>
+  </section>
+
+  <!-- ================= painted wing teaser ================= -->
+  <section class="bordered" style="text-align:center">
+    <div class="sec-label">The Painted Wing · 手绘馆</div>
+    <h2 class="sec-title" data-i18n="tz.t">AI 刻你的梦,妈妈画你的梦</h2>
+    <p class="sec-sub" style="margin:0 auto 28px" data-i18n="tz.s">馆长的母亲、画师何江,把值得挂在墙上的梦画成水墨原作。</p>
+    <div style="max-width:340px;margin:0 auto 28px;background:#ECEAE3;padding:10px;border-radius:2px">
+      <img src="assets/art/hejiang-lotus.jpg" alt="何江 · 荷塘锦鲤" style="width:100%;display:block">
+    </div>
+    <a class="btn btn-ghost" href="brush.html" data-i18n="tz.cta">走进手绘馆</a>
+  </section>
+
+  <!-- ================= trust ================= -->
+  <section class="bordered" style="text-align:center">
+    <h2 class="sec-title" data-i18n="trust.title">梦只属于你</h2>
+    <p class="sec-sub" style="margin:0 auto" data-i18n="trust.body">梦的文字与画面只存在你的档案里;beta 期间不会用于训练模型,随时可一键导出或删除。图案志的注解是诗意旁白,不是心理学诊断。</p>
+  </section>
+
+  <footer>
+    <span data-i18n="footer.rights">© 2026 觅梦 Dream Atlas · Beta</span>
+    <span><a href="app.html" data-i18n="footer.press">制版台</a> · <a href="https://doublemi.ai">DoubleMi<span data-i18n="footer.studio"> 出品</span></a></span>
+  </footer>
+</div>
+
+<script src="assets/js/landing.js"></script>
+</body>
+</html>
