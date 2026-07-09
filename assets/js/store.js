@@ -130,9 +130,25 @@ window.AtlasStore = (function () {
   }
   async function fetchGallery(limit) {
     if (!hasCloud) return [];
-    const { data } = await sb.from("gallery").select("text,motifs,art_params,donated_at")
+    const { data } = await sb.from("gallery").select("id,text,motifs,art_params,donated_at")
       .eq("approved", true).order("donated_at", { ascending: false }).limit(limit || 60);
     return data || [];
+  }
+
+  /* ---------- resonance: one lamp per visitor per plate ---------- */
+  async function fetchResonance(ids) {
+    if (!hasCloud || !ids.length) return {};
+    const { data } = await sb.from("gallery_resonance")
+      .select("gallery_id").in("gallery_id", ids);
+    const counts = {};
+    (data || []).forEach(r => { counts[r.gallery_id] = (counts[r.gallery_id] || 0) + 1; });
+    return counts;
+  }
+  async function resonate(galleryId) {
+    if (!hasCloud) return false;
+    const { error } = await sb.from("gallery_resonance")
+      .insert({ gallery_id: galleryId, anon_id: user ? user.id : anonId() });
+    return !error || error.code === "23505"; // duplicate lamp = already lit: fine
   }
 
   async function logEvent(name, props) {
@@ -147,5 +163,5 @@ window.AtlasStore = (function () {
     } catch (e) { /* analytics must never break the product */ }
   }
 
-  return { init, isCloud: () => hasCloud, signedIn, getUser: () => user, getProfile, signIn, signOut, saveDream, listDreams, countSince, joinWaitlist, donateToGallery, fetchGallery, logEvent };
+  return { init, isCloud: () => hasCloud, signedIn, getUser: () => user, getProfile, signIn, signOut, saveDream, listDreams, countSince, joinWaitlist, donateToGallery, fetchGallery, fetchResonance, resonate, anonId, logEvent };
 })();

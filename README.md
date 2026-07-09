@@ -2,7 +2,7 @@
 
 每一个梦,都值得一幅铜版画。说出昨夜的梦,收下今晨为你镌刻的一页。
 
-**DoubleMi 出品 · Product 001**(品牌无中文名,中文 slogan「另一个你」)。母站在 `~/Documents/kmRyo/doublemi/`,部署到 doublemi.ai;本产品部署到 **dream.doublemi.ai**。全家产品共用同一个 Supabase 项目(一次注册,产品通用;waitlist 表用 `source` 字段区分来源)。
+**DoubleMi 出品 · Product 002**(品牌无中文名,中文 slogan「另一个你」)。母站在 `~/Documents/kmRyo/doublemi/`,部署到 doublemi.ai;本产品部署到 **dream.doublemi.ai**。全家产品共用同一个 Supabase 项目(一次注册,产品通用;waitlist 表用 `source` 字段区分来源)。
 
 商业化蓝图: `~/Documents/kmRyo/觅梦-商业化蓝图-2026-07.md`(定价、时间线、止损线都在那里)。
 
