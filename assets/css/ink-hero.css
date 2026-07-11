@@ -1,0 +1,92 @@
+/* 觅梦 ink-hero — full-bleed particle intro */
+#inkHero{
+  position:relative;height:100vh;height:100svh;min-height:560px;
+  background:var(--bg-deep);overflow:hidden;
+}
+#inkCanvas{position:absolute;inset:0;display:block}
+
+/* soft vignette + ground fade into page bg */
+#inkHero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 42%, transparent 55%, rgba(10,11,13,.55) 100%),
+    linear-gradient(to bottom, rgba(20,21,24,.35) 0%, transparent 14%, transparent 82%, var(--bg) 100%);
+}
+
+/* nav overlays the canvas */
+.ink-nav{
+  position:absolute;top:0;left:0;right:0;z-index:3;
+  padding:0 clamp(20px,4vw,48px);
+}
+.ink-nav nav{border-bottom-color:transparent}
+
+/* centered overlay copy */
+.ink-stage{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 24px;
+}
+.ink-stage .kicker{margin-bottom:22px;text-shadow:0 1px 12px rgba(0,0,0,.6)}
+.ink-stage h1{text-shadow:0 2px 26px rgba(0,0,0,.65)}
+.ink-stage .hero-tag{max-width:520px;text-shadow:0 1px 10px rgba(0,0,0,.7)}
+.ink-cta{margin-top:38px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;pointer-events:auto}
+
+/* credit line, bottom-left */
+.ink-credit{
+  position:absolute;left:clamp(20px,4vw,48px);bottom:26px;z-index:3;
+  font-size:11px;letter-spacing:.18em;color:var(--faint);
+  writing-mode:horizontal-tb;pointer-events:none;
+  opacity:0;transition:opacity 1.6s ease;
+}
+.ink-live .ink-credit{opacity:1}
+
+/* scroll cue */
+.ink-scroll{
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;
+  width:1px;height:44px;overflow:hidden;pointer-events:none;
+}
+.ink-scroll::before{
+  content:"";position:absolute;left:0;top:-44px;width:1px;height:44px;
+  background:linear-gradient(to bottom, transparent, var(--cream));
+  animation:inkScroll 2.6s cubic-bezier(.6,.05,.3,.95) infinite;
+}
+@keyframes inkScroll{to{top:44px}}
+
+/* overlay content fades in only after particles start */
+.ink-stage, .ink-nav{opacity:0;transition:opacity 1.4s ease .4s}
+.ink-live .ink-stage, .ink-live .ink-nav,
+.ink-static .ink-stage, .ink-static .ink-nav{opacity:1}
+
+/* wide screens: editorial split — copy left, painting right (canvas offsets itself) */
+@media (min-aspect-ratio: 23/20){
+  .ink-stage{
+    align-items:flex-start;text-align:left;
+    padding-left:clamp(28px,7vw,110px);padding-right:46%;
+  }
+  .ink-stage .hero-tag{margin-left:0}
+  .ink-cta{justify-content:flex-start}
+}
+
+/* debug (?inkPhase=…): skip fades so headless screenshots are deterministic */
+.ink-debug .ink-stage,.ink-debug .ink-nav,.ink-debug .ink-credit{transition:none}
+
+/* fallback: no WebGL / reduced motion — static painting, dimmed */
+.ink-static #inkCanvas{display:none}
+.ink-static{
+  background:
+    linear-gradient(rgba(20,21,24,.72), rgba(20,21,24,.88)),
+    url("../wx/a1/01.jpg") center 30%/cover no-repeat;
+}
+
+/* portrait: copy in the top third, painting below (canvas offsets itself down) */
+@media (max-aspect-ratio: 23/20){
+  .ink-stage{justify-content:flex-start;padding-top:clamp(88px,16svh,150px)}
+  .ink-stage h1{font-size:clamp(38px,9vw,58px)}
+  .ink-stage .hero-tag{font-size:14.5px;margin-top:20px}
+  .ink-cta{margin-top:26px}
+}
+
+@media (max-width:640px){
+  #inkHero{min-height:480px}
+  .ink-credit{display:none}
+}

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600&family=Long+Cang&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/atlas.css">
+<link rel="stylesheet" href="assets/css/ink-hero.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
@@ -18,18 +19,21 @@
 </head>
 <body>
 
-<div class="wrap">
-  <nav>
-    <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
-    <div class="nav-right">
-      <a href="gallery.html" data-i18n="nav.gallery">今夜展厅</a>
-      <a href="brush.html" data-i18n="nav.brush">手绘馆</a>
-      <a href="app.html" data-i18n="nav.app">进入制版台</a>
-      <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
-    </div>
-  </nav>
-
-  <header class="hero">
+<!-- ================= ink hero:何江水墨 → 流体粒子 ================= -->
+<header id="inkHero">
+  <canvas id="inkCanvas"></canvas>
+  <div class="ink-nav">
+    <nav>
+      <a href="index.html" class="nav-mark">Dream Atlas<span class="cn">觅梦</span></a>
+      <div class="nav-right">
+        <a href="gallery.html" data-i18n="nav.gallery">今夜展厅</a>
+        <a href="brush.html" data-i18n="nav.brush">手绘馆</a>
+        <a href="app.html" data-i18n="nav.app">进入制版台</a>
+        <button class="lang-toggle" onclick="AtlasI18N.toggle()">EN</button>
+      </div>
+    </nav>
+  </div>
+  <div class="ink-stage">
     <div class="kicker">The Museum of Dreams · 梦境博物馆</div>
     <h1>Dream Atlas<span class="cn">觅 · 梦</span></h1>
     <p class="hero-tag">
@@ -37,12 +41,16 @@
       <em>Every dream deserves an engraving.</em><br>
       <span data-i18n="hero.tag2">说出昨夜的梦,收下今晨为你镌刻的一页。</span>
     </p>
-    <div style="margin-top:40px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+    <div class="ink-cta">
       <a class="btn" href="app.html" data-i18n="hero.cta">免费开始镌刻</a>
       <a class="btn btn-ghost" href="#waitlist" data-i18n="hero.cta2">加入等待名单</a>
     </div>
-    <div class="hair-rule"></div>
-  </header>
+  </div>
+  <div class="ink-credit" id="inkCredit">粒子取自何江水墨原作</div>
+  <div class="ink-scroll"></div>
+</header>
+
+<div class="wrap">
 
   <!-- ================= specimens ================= -->
   <section>
@@ -154,5 +162,6 @@
 </div>
 
 <script src="assets/js/landing.js"></script>
+<script src="assets/js/ink-hero.js"></script>
 </body>
 </html>
