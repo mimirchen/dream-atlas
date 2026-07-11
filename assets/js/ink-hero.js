@@ -19,13 +19,19 @@
   var canvas = document.getElementById('inkCanvas');
   var creditEl = document.getElementById('inkCredit');
 
-  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var gl = !reduced && canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
+  /* capture mode (?inkCapture=1&w=1080&h=1920): deterministic frame stepping
+     for offline video rendering — exposes window.__inkCapture, no rAF loop  */
+  var CAP = /inkCapture=1/.test(location.search);
+  var capW = +((location.search.match(/[?&]w=(\d+)/) || [])[1] || 1080);
+  var capH = +((location.search.match(/[?&]h=(\d+)/) || [])[1] || 1920);
+
+  var reduced = !CAP && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var gl = !reduced && canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: CAP });
   if (!gl) { host.classList.add('ink-static'); return; }
 
-  var isSmall = Math.min(window.innerWidth, window.innerHeight) < 640 || matchMedia('(pointer:coarse)').matches;
+  var isSmall = !CAP && (Math.min(window.innerWidth, window.innerHeight) < 640 || matchMedia('(pointer:coarse)').matches);
   var COUNT = isSmall ? 26000 : 62000;
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var DPR = CAP ? 1 : Math.min(window.devicePixelRatio || 1, 2);
 
   /* ---------- shaders ---------- */
   var NOISE = [
@@ -326,7 +332,11 @@
     var wide = viewAspect > 1.15;
     var worldW = WORLD_H * s.aspect;
     var offX = 0, offY = 0, maxW, maxH;
-    if (wide) {
+    if (CAP) {
+      /* capture: painting centred, generous margins */
+      maxW = 2 * viewAspect * 0.86;
+      maxH = 2 * 0.8;
+    } else if (wide) {
       /* editorial split: copy left, painting right of centre */
       offX = Math.min(0.62, viewAspect * 0.33);
       maxW = 2 * (viewAspect - offX) * 0.92;
@@ -344,25 +354,35 @@
     if (creditEl) creditEl.textContent = '粒子取自何江水墨原作 ' + PAINTINGS[cur].cn;
   }
   function resize() {
-    var w = host.clientWidth, h = host.clientHeight;
+    var w = CAP ? capW : host.clientWidth, h = CAP ? capH : host.clientHeight;
     canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
-    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    canvas.style.width = CAP ? '100%' : w + 'px';
+    canvas.style.height = CAP ? 'auto' : h + 'px';
     gl.viewport(0, 0, canvas.width, canvas.height);
     viewAspect = w / h;
-    gl.uniform2f(loc.uView, viewAspect, (isSmall ? 2.4 : 3.0) * DPR);
+    var ps = CAP ? 3.0 * (h / 900) : (isSmall ? 2.4 : 3.0) * DPR;
+    gl.uniform2f(loc.uView, viewAspect, ps);
     fit();
   }
 
   function frame(now) {
-    var dt = Math.min((now - last) / 1000, 0.05); last = now; time += dt;
+    var dt = Math.min((now - last) / 1000, 0.05); last = now;
+    tick(dt);
+    requestAnimationFrame(frame);
+  }
+
+  function tick(dt) {
+    time += dt;
     phaseT += dt;
     if (phase === 'form') { morph = Math.min(1, phaseT / T.form); if (phaseT >= T.form) { phase = 'hold'; phaseT = 0; } }
     else if (phase === 'hold') { morph = 1; if (!forced && phaseT >= T.hold) { phase = 'dissolve'; phaseT = 0; } }
     else if (phase === 'dissolve') { morph = Math.max(0, 1 - phaseT / T.dissolve); if (phaseT >= T.dissolve) { phase = 'flow'; phaseT = 0; } }
     else { morph = 0;
       if (phaseT >= T.flow) {
-        var next = (cur + 1) % PAINTINGS.length;
-        if (plates[next]) { cur = next; upload(plates[cur]); setCredit(); }
+        if (!CAP) { /* capture renders one painting's full cycle */
+          var next = (cur + 1) % PAINTINGS.length;
+          if (plates[next]) { cur = next; upload(plates[cur]); setCredit(); }
+        }
         phase = 'form'; phaseT = 0;
       }
     }
@@ -387,13 +407,18 @@
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.POINTS, 0, COUNT);
-    requestAnimationFrame(frame);
   }
 
   function start(s) {
     if (started) return; started = true;
     resize(); upload(s); setCredit();
     host.classList.add('ink-live');
+    if (CAP) {
+      /* video pipeline drives us frame by frame; cycle starts as ink cloud */
+      phase = forced ? phase : 'flow'; phaseT = 0;
+      window.__inkCapture = { canvas: canvas, step: tick, ready: true };
+      return;
+    }
     requestAnimationFrame(function (n) { last = n; requestAnimationFrame(frame); });
   }
 
