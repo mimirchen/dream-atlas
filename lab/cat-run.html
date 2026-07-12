@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>猫望花枝 · 粒子重演 — 觅梦 lab</title>
+<meta name="robots" content="noindex">
+<style>
+  *{margin:0;padding:0}html,body{height:100%;background:#141518;overflow:hidden}
+  canvas{display:block}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<script>
+/* 猫望花枝 — the cat runs, then settles back into the painting.
+   After Quayola: a classical work re-performed by machine motion.
+   Timeline: cloud → background forms → cat dashes/pauses/leaps → settles home.
+   Capture: ?inkCapture=1&w=&h= exposes __inkCapture.step(dt); ?t=N jumps (QA). */
+(function () {
+  'use strict';
+  var SRC = '../assets/wx/a1/03.jpg';
+  var WORLD_H = 1.6, COUNT = 62000, DUR_HOLD_END = 19.5;
+
+  var canvas = document.getElementById('cv');
+  var CAP = /inkCapture=1/.test(location.search);
+  var capW = +((location.search.match(/[?&]w=(\d+)/) || [])[1] || 0);
+  var capH = +((location.search.match(/[?&]h=(\d+)/) || [])[1] || 0);
+  var jumpT = +((location.search.match(/[?&]t=([\d.]+)/) || [])[1] || 0);
+
+  var gl = canvas.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: CAP });
+  if (!gl) { document.body.style.background = '#141518 url(' + SRC + ') center/contain no-repeat'; return; }
+
+  /* ---------- shaders (Ashima snoise as in ink-hero) ---------- */
+  var NOISE = 'vec3 mod289(vec3 x){return x - floor(x*(1.0/289.0))*289.0;}\nvec4 mod289(vec4 x){return x - floor(x*(1.0/289.0))*289.0;}\nvec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}\nvec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314*r;}\nfloat snoise(vec3 v){const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.0*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;vec4 sh=-step(h,vec4(0.0));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}';
+
+  var VERT = 'precision highp float;\n' +
+    'attribute vec3 aTarget;attribute vec3 aColor;attribute vec2 aSeed;attribute float aGroup;attribute vec2 aRel;\n' +
+    'uniform float uTime;uniform vec2 uView;uniform float uScale;\n' +
+    'uniform float uBgMorph;uniform float uCatMorph;uniform float uCatAmp;\n' +
+    'uniform vec2 uCatHome;uniform vec2 uCatOff;uniform vec2 uCatVel;uniform float uDrift;\n' +
+    'varying vec3 vColor;varying float vFade;\n' + NOISE + '\n' +
+    'void main(){\n' +
+    ' float t=uTime;\n' +
+    ' float mo=mix(uBgMorph,uCatMorph,aGroup);\n' +
+    ' float m=clamp(mo*1.45-aSeed.x*0.45,0.0,1.0);m=m*m*(3.0-2.0*m);\n' +
+    ' vec3 p=aTarget*uScale;\n' +
+    ' if(aGroup>0.5){\n' +
+    '   vec2 rel=aRel*uScale;\n' +
+    '   float sp=length(uCatVel);vec2 dir=sp>0.001?uCatVel/sp:vec2(1.0,0.0);\n' +
+    '   float s=clamp(sp*0.35,0.0,0.45);\n' +
+    '   float a=dot(rel,dir);float b=dot(rel,vec2(-dir.y,dir.x));\n' +
+    '   vec2 rel2=dir*(a*(1.0+s))+vec2(-dir.y,dir.x)*(b*(1.0-s*0.6));\n' +
+    '   p.xy=uCatHome*uScale+uCatOff+rel2;\n' +
+    '   p.xy-=uCatVel*(aSeed.x*aSeed.x*0.12);\n' +   // comet lag
+    ' }\n' +
+    ' vec3 np=aTarget*1.35+vec3(0.0,0.0,aSeed.y*4.0);\n' +
+    ' float spn=0.10+aSeed.y*0.06;\n' +
+    ' vec3 flow=vec3(snoise(np+vec3(t*spn,0.0,0.0)),snoise(np+vec3(0.0,t*spn,7.3)),snoise(np*0.8+vec3(3.1,t*spn*0.7,0.0)));\n' +
+    ' float smallAmp=mix(0.014,uCatAmp,aGroup);\n' +
+    ' float amp=mix(0.85+aSeed.y*0.5,smallAmp,m);\n' +
+    ' p+=flow*amp;\n' +
+    ' float cd=cos(uDrift),sd=sin(uDrift);\n' +
+    ' p.xz=mat2(cd,-sd,sd,cd)*p.xz;\n' +
+    ' float persp=1.6/(1.6+p.z);\n' +
+    ' gl_Position=vec4(p.x*persp/uView.x,p.y*persp,0.0,1.0);\n' +
+    ' float sz=uView.y*(0.7+aSeed.x*1.0)*persp;\n' +
+    ' gl_PointSize=sz*mix(1.6,0.9,m);\n' +
+    ' vColor=aColor;\n' +
+    ' vFade=mix(0.5,1.0,m)*(0.6+0.4*aSeed.y);\n' +
+    '}';
+  var FRAG = 'precision mediump float;varying vec3 vColor;varying float vFade;\n' +
+    'void main(){vec2 uv=gl_PointCoord-0.5;float a=smoothstep(0.5,0.06,length(uv))*vFade;gl_FragColor=vec4(vColor*a,a);}';
+
+  function sh(t, s) { var o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  var L = {};
+  ['uTime', 'uView', 'uScale', 'uBgMorph', 'uCatMorph', 'uCatAmp', 'uCatHome', 'uCatOff', 'uCatVel', 'uDrift'].forEach(function (n) { L[n] = gl.getUniformLocation(prog, n); });
+  var A = {};
+  ['aTarget', 'aColor', 'aSeed', 'aGroup', 'aRel'].forEach(function (n) { A[n] = gl.getAttribLocation(prog, n); gl.enableVertexAttribArray(A[n]); });
+  gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.clearColor(0.078, 0.082, 0.094, 1);
+
+  /* ---------- cat mask in normalized image coords (u right, v down) ---------- */
+  function inEllipse(u, v, cx, cy, rx, ry) { var dx = (u - cx) / rx, dy = (v - cy) / ry; return dx * dx + dy * dy <= 1; }
+  function isCat(u, v) {
+    if (u > 0.84 && v > 0.78) return false;              // 何江 signature + seal
+    if (v > 0.88 && u < 0.52) return false;              // ground strokes
+    if (inEllipse(u, v, 0.63, 0.29, 0.155, 0.14)) return true;   // head + ears + whiskers
+    if (inEllipse(u, v, 0.72, 0.60, 0.18, 0.24)) return true;    // body
+    if (u > 0.31 && u < 0.62 && v > 0.30 && v < 0.52) return true; // paw + front legs
+    if (u > 0.48 && u < 0.70 && v > 0.45 && v < 0.82) return true; // belly / hind
+    if (inEllipse(u, v, 0.61, 0.85, 0.13, 0.10)) return true;    // tail
+    return false;
+  }
+
+  /* ---------- paper-aware sampling (as ink-hero) + grouping ---------- */
+  function sample(img) {
+    var G = 460, w, h;
+    if (img.width > img.height) { w = G; h = Math.round(G * img.height / img.width); }
+    else { h = G; w = Math.round(G * img.width / img.height); }
+    var cv2 = document.createElement('canvas'); cv2.width = w; cv2.height = h;
+    var cx = cv2.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, 0, w, h);
+    var px = cx.getImageData(0, 0, w, h).data;
+    function lum(o) { return 0.2126 * px[o] + 0.7152 * px[o + 1] + 0.0722 * px[o + 2]; }
+    var lums = []; for (var o = 0; o < px.length; o += 16) lums.push(lum(o));
+    lums.sort(function (a, b) { return a - b; });
+    var cut = lums[(lums.length * 0.7) | 0], gr = 0, gg = 0, gb = 0, gn = 0;
+    for (o = 0; o < px.length; o += 16) if (lum(o) >= cut) { gr += px[o]; gg += px[o + 1]; gb += px[o + 2]; gn++; }
+    gr /= gn; gg /= gn; gb /= gn;
+    var gL = 0.2126 * gr + 0.7152 * gg + 0.0722 * gb;
+    var CELL = 26, cw = Math.ceil(w / CELL), ch = Math.ceil(h / CELL);
+    var paper = new Float32Array(cw * ch * 3);
+    for (var cy = 0; cy < ch; cy++) for (var cxi = 0; cxi < cw; cxi++) {
+      var arr = [];
+      for (var y = cy * CELL; y < Math.min((cy + 1) * CELL, h); y += 2)
+        for (var x = cxi * CELL; x < Math.min((cxi + 1) * CELL, w); x += 2) arr.push((y * w + x) * 4);
+      arr.sort(function (a, b) { return lum(b) - lum(a); });
+      var take = Math.max(1, (arr.length * 0.2) | 0), pr = 0, pg = 0, pb = 0;
+      for (var k = 0; k < take; k++) { pr += px[arr[k]]; pg += px[arr[k] + 1]; pb += px[arr[k] + 2]; }
+      pr /= take; pg /= take; pb /= take;
+      if (0.2126 * pr + 0.7152 * pg + 0.0722 * pb < gL * 0.62) { pr = gr; pg = gg; pb = gb; }
+      var ci = (cy * cw + cxi) * 3; paper[ci] = pr; paper[ci + 1] = pg; paper[ci + 2] = pb;
+    }
+    var pts = [];
+    for (var y2 = 0; y2 < h; y2++) for (var x2 = 0; x2 < w; x2++) {
+      var o2 = (y2 * w + x2) * 4, ci2 = (((y2 / CELL) | 0) * cw + ((x2 / CELL) | 0)) * 3;
+      var r = Math.min(1, px[o2] / paper[ci2]), g = Math.min(1, px[o2 + 1] / paper[ci2 + 1]), b = Math.min(1, px[o2 + 2] / paper[ci2 + 2]);
+      var lm = 0.2126 * r + 0.7152 * g + 0.0722 * b, st = Math.max(r, g, b) - Math.min(r, g, b), ink = 1 - lm;
+      if (ink < 0.2 && st < 0.17) continue;
+      var wg = Math.min(1, ink * 1.15 + st * 1.6); if (wg < 0.24) continue;
+      pts.push([x2, y2, r, g, b, ink, st, wg]);
+    }
+    var scale = WORLD_H / h, ox = w / 2, oy = h / 2;
+    var tgt = new Float32Array(COUNT * 3), col = new Float32Array(COUNT * 3);
+    var seed = new Float32Array(COUNT * 2), grp = new Float32Array(COUNT), rel = new Float32Array(COUNT * 2);
+    /* cat centroid (world) */
+    var cx0 = 0, cy0 = 0, cn = 0;
+    for (var i = 0; i < pts.length; i++) if (isCat(pts[i][0] / w, pts[i][1] / h)) { cx0 += pts[i][0]; cy0 += pts[i][1]; cn++; }
+    cx0 = (cx0 / cn - ox) * scale; cy0 = -(cy0 / cn - oy) * scale;
+    for (var k2 = 0; k2 < COUNT; k2++) {
+      var p = pts[(Math.random() * pts.length) | 0];
+      for (var tri = 0; tri < 3; tri++) { if (Math.random() < p[7]) break; p = pts[(Math.random() * pts.length) | 0]; }
+      var wx = (p[0] - ox + Math.random() - 0.5) * scale, wy = -(p[1] - oy + Math.random() - 0.5) * scale;
+      tgt[k2 * 3] = wx; tgt[k2 * 3 + 1] = wy; tgt[k2 * 3 + 2] = (Math.random() - 0.5) * 0.14;
+      var cat = isCat(p[0] / w, p[1] / h) ? 1 : 0;
+      grp[k2] = cat;
+      rel[k2 * 2] = cat ? wx - cx0 : 0; rel[k2 * 2 + 1] = cat ? wy - cy0 : 0;
+      seed[k2 * 2] = Math.random(); seed[k2 * 2 + 1] = Math.random();
+      var R = p[2], Gc = p[3], B = p[4], ink2 = p[5], st2 = p[6], cr, cg, cb;
+      if (st2 < 0.14) { var v = Math.pow(Math.min(1, ink2 * 1.5), 1.1); cr = 0.16 + 0.80 * v; cg = 0.17 + 0.78 * v; cb = 0.19 + 0.72 * v; }
+      else { var mx = Math.max(R, Gc, B, 0.001), lift = 0.55 + 0.45 * Math.min(1, ink2 * 0.8 + st2 * 1.4); cr = R / mx * lift; cg = Gc / mx * lift; cb = B / mx * lift; if (cr > 0.7 && cg < cr * 0.72 && cb < cr * 0.72) cr = Math.min(1, cr * 1.12); }
+      col[k2 * 3] = cr; col[k2 * 3 + 1] = cg; col[k2 * 3 + 2] = cb;
+    }
+    return { tgt: tgt, col: col, seed: seed, grp: grp, rel: rel, aspect: w / h, home: [cx0, cy0] };
+  }
+
+  /* ---------- timeline ---------- */
+  /* path keyframes: absolute cat positions in unit space (x right, y up, ±1) */
+  var KEY = [
+    { t: 4.5, x: -0.85, y: -0.45, e: 'hold' },
+    { t: 5.6, x: 0.55, y: -0.55, e: 'outCubic' },   // dash along the bottom
+    { t: 6.3, x: 0.58, y: -0.50, e: 'inOut' },      // stop, look
+    { t: 7.4, x: 0.62, y: 0.55, e: 'outBack' },     // dart up the right side
+    { t: 8.8, x: 0.60, y: 0.58, e: 'inOut' },       // pause under the blossoms
+    { t: 9.9, x: -0.05, y: 0.85, e: 'inOut' },      // hop across the top
+    { t: 11.0, x: -0.70, y: 0.35, e: 'outCubic' },  // down over the rock
+    { t: 12.2, x: -0.60, y: -0.55, e: 'inOut' },    // bottom-left
+    { t: 13.4, x: -0.25, y: -0.30, e: 'inOut' },    // curving home
+    { t: 15.6, x: 999, y: 999, e: 'inOutSlow' }     // 999 = home sentinel
+  ];
+  function ease(k, u) {
+    if (k === 'outCubic') return 1 - Math.pow(1 - u, 3);
+    if (k === 'outBack') { var c = 1.4; return 1 + (c + 1) * Math.pow(u - 1, 3) + c * Math.pow(u - 1, 2); }
+    if (k === 'inOutSlow') return u * u * (3 - 2 * u);
+    return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // inOut
+  }
+  var unitScale = [1, 1], home = [0, 0], uScaleVal = 1;
+  function catPosAt(t) {
+    var hx = home[0] * uScaleVal, hy = home[1] * uScaleVal;
+    function px(k) { return k.x > 900 ? hx : k.x * unitScale[0]; }
+    function py(k) { return k.y > 900 ? hy : k.y * unitScale[1]; }
+    if (t <= KEY[0].t) return [px(KEY[0]), py(KEY[0])];
+    for (var i = 1; i < KEY.length; i++) {
+      if (t <= KEY[i].t) {
+        var a = KEY[i - 1], b = KEY[i];
+        var u = ease(b.e, (t - a.t) / (b.t - a.t));
+        return [px(a) + (px(b) - px(a)) * u, py(a) + (py(b) - py(a)) * u];
+      }
+    }
+    return [hx, hy];
+  }
+  function stateAt(t) {
+    var bg = t < 1.5 ? 0 : t < 4.5 ? (t - 1.5) / 3 : 1;
+    var cm = t < 2.0 ? 0 : t < 4.0 ? 0.9 * (t - 2.0) / 2 : t < 14.0 ? 0.9 : t < 16.0 ? 0.9 + 0.1 * (t - 14.0) / 2 : 1;
+    var pos = catPosAt(t), eps = 0.06;
+    var p2 = catPosAt(t + eps), p0 = catPosAt(t - eps);
+    var vel = [(p2[0] - p0[0]) / (2 * eps), (p2[1] - p0[1]) / (2 * eps)];
+    var sp = Math.hypot(vel[0], vel[1]);
+    var amp = t >= 16.0 ? 0.014 : Math.min(0.09, 0.03 + sp * 0.04);
+    var off = [pos[0] - home[0] * uScaleVal, pos[1] - home[1] * uScaleVal];
+    return { bg: bg, cm: cm, off: off, vel: vel, amp: amp };
+  }
+
+  /* ---------- boot ---------- */
+  var bufs = {}, viewAspect = 1, time = 0, started = false;
+  function buf(name, data, size) {
+    if (!bufs[name]) bufs[name] = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufs[name]);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(A[name], size, gl.FLOAT, false, 0, 0);
+  }
+  var S;
+  function resize() {
+    var w = CAP && capW ? capW : innerWidth, h = CAP && capH ? capH : innerHeight;
+    var dpr = CAP ? 1 : Math.min(devicePixelRatio || 1, 2);
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = '100%';
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    viewAspect = w / h;
+    gl.uniform2f(L.uView, viewAspect, 3.0 * (h / 900) * dpr);
+    var worldW = WORLD_H * S.aspect;
+    uScaleVal = Math.min(1, (2 * viewAspect * 0.86) / worldW, (2 * 0.8) / WORLD_H);
+    gl.uniform1f(L.uScale, uScaleVal);
+    unitScale = [viewAspect * (viewAspect < 1 ? 0.72 : 0.8), 0.78];
+    gl.uniform2f(L.uCatHome, home[0], home[1]);
+  }
+  function tick(dt) {
+    time += dt;
+    var t = Math.min(time, DUR_HOLD_END);
+    var st = stateAt(t);
+    gl.uniform1f(L.uTime, time);
+    gl.uniform1f(L.uBgMorph, st.bg);
+    gl.uniform1f(L.uCatMorph, st.cm);
+    gl.uniform1f(L.uCatAmp, st.amp);
+    gl.uniform2f(L.uCatOff, st.off[0], st.off[1]);
+    gl.uniform2f(L.uCatVel, st.vel[0], st.vel[1]);
+    gl.uniform1f(L.uDrift, Math.sin(time * 0.07) * 0.08);
+    Object.keys(SIZES).forEach(function (n) { gl.bindBuffer(gl.ARRAY_BUFFER, bufs[n]); gl.vertexAttribPointer(A[n], SIZES[n], gl.FLOAT, false, 0, 0); });
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, COUNT);
+  }
+  var SIZES = { aTarget: 3, aColor: 3, aSeed: 2, aGroup: 1, aRel: 2 };
+  var img = new Image();
+  img.onload = function () {
+    S = sample(img);
+    home = S.home;
+    buf('aTarget', S.tgt, 3); buf('aColor', S.col, 3); buf('aSeed', S.seed, 2);
+    buf('aGroup', S.grp, 1); buf('aRel', S.rel, 2);
+    resize();
+    if (jumpT) { tick(jumpT); }
+    if (CAP) { window.__inkCapture = { canvas: canvas, step: tick, ready: true }; if (jumpT) return; return; }
+    var last = 0;
+    requestAnimationFrame(function loop(now) {
+      if (last) tick(Math.min((now - last) / 1000, 0.05));
+      last = now;
+      if (time > DUR_HOLD_END + 1.5) time = 0;   // live page loops
+      requestAnimationFrame(loop);
+    });
+  };
+  img.src = SRC;
+  window.addEventListener('resize', function () { if (S) resize(); });
+})();
+</script>
+</body>
+</html>
